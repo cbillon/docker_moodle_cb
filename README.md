@@ -28,7 +28,12 @@ It is an reference implementation aimed at Moodle testers.
    
 3.) Install moodle via browser 
 
-- create folder moodledata root chmod 0777
+- create folder moodledata www-data www-data  
+```
+    mkdir moodledata
+    chown www-data:www-data
+``` 
+
 
 - database
    - host: docker_moodle-db (et non **localhost**)
@@ -49,7 +54,17 @@ apres installation se connecter au container docker exec -it docker_moodle-app b
 modifier : chmod 0777 config.php
            chown www-data:www-data /var/wwww/moodledata 
 
+## Pour re installer
 
+ ```
+   sudo rm -r dbdata  // remove database
+   sudo rm -r cache   // data base redis
+   sudo rm -r moodledata/*
+   sudo rm moodle/config.php
+
+```
+Vérifier moodledata owwner:group www-data
+         moodle
 
 4.) Visit your moodle at http://localhost:8088/moodle
 
@@ -80,5 +95,17 @@ le fichier de configuration PHP/moodlephp.ini est copié dans /usr/local/etc/php
 
 le fichier de configuration PHP/moodlephpfpm.conf est copié dans /usr/local/etc/php-fpm.d
 
+Muliple configuration file php-fpm
+Analyzing the source code of php7.0-fpm and more specifically fpm-conf.c, it appears that
 
+    the main configuration file php-fpm.conf is read first [ fpm_conf_load_ini_file() ],
+    all include directives are read in order, giving a list of files thanks to glob(),
+    each of the file is parsed by the same fpm_conf_load_ini_file(),
+    an entry in the file overwrites any previously set value,
+    any new include will have a recursive call to the includes processing function, and
+    the glob() function sorts names, by default (no GLOB_NOSORT option)
+
+Thus we can assume - at least in this version but this is unlikely to change soon considering the present code - that it is safe to arrange the pool.d directory configuration files in alphabetical order ; any previously recorded value being overwritten by an entry with the same name read after.
+
+We have a clean way to handle configuration files for php-fpm, keeping the distribution ones untouched, and adding custom files having name alphabetically greater than the packaged ones, that contain the few options that have to be changed.
 
