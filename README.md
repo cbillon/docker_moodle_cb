@@ -46,7 +46,7 @@ OR
 
 via CLI:
 
-``docker exec -it docker_moodle-app php admin/cli/install.php --lang=fr --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype=mariadb --dbhost=docker_moodle-db  --dbname=moodle --dbuser=admin --dbpass=sesame --prefix=mdl_ --fullname=moodle_minimal --shortname=moodle_minimal --adminpass=sesame --adminemail=admin@moodle.invalid --agree-license --non-interactive``
+``docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php --lang=fr --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype=mariadb --dbhost=docker_moodle-db  --dbname=moodle --dbuser=admin --dbpass=sesame --prefix=mdl_ --fullname=moodle_minimal --shortname=moodle_minimal --adminpass=sesame --adminemail=admin@moodle.invalid --agree-license --non-interactive``
 
 Note :
 
@@ -80,7 +80,7 @@ Se connecter
 Plugins -> cache
 ajouter une instance : Redis
 dans la configuration adresse du serveur docker_moodle-redis
-en bas de l'écran modifier les correspondance -> Redis
+en bas de l'écran modifier les correspondances -> Redis
 
 Vérifier :
 Serveur : Opcache, Redis
