@@ -17,7 +17,7 @@ deploy () {
   info "$FUNCNAME" Début
   docker exec -it docker_moodle-app  php admin/cli/maintenance.php --enable
 
-  rsync -a --exclude .git /data/home/cb/adele/projects/"$PROJECT"/releases/"$RELEASE"/*  ../moodle/
+  rsync -a --exclude .git --delete /home/cb/adele/projects/"$PROJECT"/releases/"$RELEASE"/*  ../moodle/
   cp config.php ../moodle/
     
   # [] "$DEBUG" = true ]&&info config.php copy in "$SERVER" from previous deploiment

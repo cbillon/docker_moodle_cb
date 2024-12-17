@@ -35,6 +35,7 @@ It is an reference implementation aimed at Moodle testers.
 ``` 
 
 
+
 - database
    - host: docker_moodle-db (et non **localhost**)
    - dbname: moodle
@@ -52,7 +53,6 @@ Note :
 
 apres installation se connecter au container docker exec -it docker_moodle-app bash
 modifier : chmod 0777 config.php
-           chown www-data:www-data /var/wwww/moodledata 
 
 ## Pour re installer
 

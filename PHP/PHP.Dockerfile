@@ -18,6 +18,6 @@ RUN pecl install -o -f redis &&  rm -rf /tmp/pear &&  docker-php-ext-enable redi
 #RUN localedef -c -i en_AU -f UTF-8 en_AU.UTF-8
 RUN localedef -c -i fr_FR -f UTF-8 fr_FR.UTF-8
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-
+RUN usermod -u 1000 www-data
 #COPY ../moodlephp.ini "$PHP_INI_DIR/conf.d/moodlephp.ini"
 COPY ../moodlephpfpm.conf "/usr/local/etc/php-fpm.d"

@@ -4,4 +4,5 @@ docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php \
  --prefix=mdl_ --fullname=Moodle_45 --shortname=moodle_minimal --adminpass=sesame \
  --adminemail=claude.bllon@gmail.com --agree-license --non-interactive
 
+docker exec -it docker_moodle-app chmod 0777 /var/www/html/config.php
 echo "That's All!"
