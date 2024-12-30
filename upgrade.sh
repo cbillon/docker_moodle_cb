@@ -17,8 +17,8 @@ deploy () {
   info "$FUNCNAME" Début
   docker exec -it docker_moodle-app  php admin/cli/maintenance.php --enable
 
-  rsync -a --exclude .git --delete /home/cb/adele/projects/"$PROJECT"/releases/"$RELEASE"/*  ../moodle/
-  cp config.php ../moodle/
+  rsync -a --exclude .git --delete /home/cb/adele/projects/"$PROJECT"/releases/"$RELEASE"/*  ./moodle/
+  cp /home/cb/adele/projects/"$PROJECT"/env/"$ENV_DEPLOY"/config.php ./moodle/
     
   # [] "$DEBUG" = true ]&&info config.php copy in "$SERVER" from previous deploiment
   
@@ -32,6 +32,8 @@ deploy () {
 [ -z $1 ] && error "$1" Parametre projet missing && exit 1
 
 PROJECT="$1"
+ENV_DEPLOY=dev
+
 [  -z "$2" ] && RELEASE='current' || RELEASE="$2"
 info Project: "$PROJECT" Release: "$RELEASE"
 

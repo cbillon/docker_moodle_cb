@@ -20,4 +20,5 @@ RUN localedef -c -i fr_FR -f UTF-8 fr_FR.UTF-8
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN usermod -u 1000 www-data
 #COPY ../moodlephp.ini "$PHP_INI_DIR/conf.d/moodlephp.ini"
+#COPY ../moodlephp.ini "$PHP_INI_DIR/conf.d/moodlephp.ini"
 COPY ../moodlephpfpm.conf "/usr/local/etc/php-fpm.d"
