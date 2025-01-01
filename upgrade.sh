@@ -11,17 +11,43 @@ function warn() { echo "${YELOW}${@}${NC}"; }
 function error() { echo "${RED}${@}${NC}"; }
 function success() { echo "${GREEN}${@}${NC}"; }
 
-
 deploy () {
 
-  info "$FUNCNAME" Début
-  docker exec -it docker_moodle-app  php admin/cli/maintenance.php --enable
+# 1 PROJECT
+# 2 ENV
+# 3 RELEASE (OPTIONAL)
+# docker compose must be up
 
-  rsync -a --exclude .git --delete /home/cb/adele/projects/"$PROJECT"/releases/"$RELEASE"/*  ./moodle/
-  cp /home/cb/adele/projects/"$PROJECT"/env/"$ENV_DEPLOY"/config.php ./moodle/
-    
-  # [] "$DEBUG" = true ]&&info config.php copy in "$SERVER" from previous deploiment
+  info "$FUNCNAME" Début
+  [ -z "$1" ] && error  PROJECT parameter missing && exit 1
+  [ -z "$2" ] && error  ENVIRONMENT parameter missing && exit 1
+  # RELEASE optional
+  PROJECT="$1"
+  ENV_DEPLOY="$2" 
+  [  -z "$3" ] && RELEASE=current || RELEASE="$3"
+   
+  RACINE=$(pwd)
+  TARGET="$RACINE"/moodle 
+  MOODLE_SRC=/home/cb/adele/moodle
+
+  info "$PROJECT" "$ENV_DEPLOY" "$RELEASE" "$TARGET"
+
+  cd "$MOODLE_SRC" || exit
   
+  info release before: "$RELEASE"
+  if [ "$RELEASE" == 'current' ]; then
+    RELEASE=$(git tag -l | sort -rn | head -n 1)
+  fi
+
+  info release: "$RELEASE"
+  [ -z "$RELEASE" ] && error release not defined! && exit
+  git checkout "$RELEASE"
+  [ $? -ne 0 ] && error git checkout "$RELEASE" && exit  
+  docker exec -it docker_moodle-app  php admin/cli/maintenance.php --enable 
+  rsync -a --info=progress2 --exclude .git --delete /home/cb/adele/moodle/ "$TARGET"/
+  info "mise à jour depuis git de $TARGET"    
+  cp /home/cb/adele/projects/"$PROJECT"/env/"$ENV_DEPLOY"/config.php "$TARGET"/
+    
   docker exec -it docker_moodle-app  php admin/cli/upgrade.php
   docker exec -it docker_moodle-app  php admin/cli/maintenance.php --disable
 
@@ -29,14 +55,6 @@ deploy () {
 
 }
 
-[ -z $1 ] && error "$1" Parametre projet missing && exit 1
-
-PROJECT="$1"
-ENV_DEPLOY=dev
-
-[  -z "$2" ] && RELEASE='current' || RELEASE="$2"
-info Project: "$PROJECT" Release: "$RELEASE"
-
-deploy "$PROJECT" "$RELEASE"
+deploy "$1" "$2" "$3"
  
 info "That's All!"
