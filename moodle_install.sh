@@ -5,4 +5,6 @@ docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php \
  --adminemail=claude.bllon@gmail.com --agree-license --non-interactive
 
 docker exec -it docker_moodle-app chmod 0777 /var/www/html/config.php
+#  copy config.php after fresh install
+[ -f  /home/cb/adele/projects/demo/env/dev/config.php ] || cp moodle/config.php  /home/cb/adele/projects/demo/env/dev/config.php
 echo "That's All!"
