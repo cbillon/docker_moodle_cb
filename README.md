@@ -10,9 +10,11 @@ It is an reference implementation aimed at Moodle testers.
 ## How to start
 1.) Clone this repository inside a folder
 
-``git clone https://github.com/Dmfama20/docker_moodle_minimal.git minimal_moodle``
+``git clone git@github.com:cbillon/docker_moodle_cb.git``
 
-2.) Place your favourite moodle version inside the *moodle* folder. You can get it from [moodle.org](https://download.moodle.org/releases/latest/).
+d'apres : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minimal_moodle
+
+2.) 
 
   supprees if exists dbdata
   update file .env
@@ -23,8 +25,11 @@ It is an reference implementation aimed at Moodle testers.
    MYSQL_USER=admin
    MYSQL_PASSWORD=sesame
    MYSQL_DATABASE=moodle
+
+   MOODLE_SRC=/home/cb/adele/moodle
+
 ```
-   install mariadb and create database and user password first exec
+   
    
 3.) Install moodle via browser 
 
@@ -49,24 +54,29 @@ via CLI:
 
 ``docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php --lang=fr --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype=mariadb --dbhost=docker_moodle-db  --dbname=moodle --dbuser=admin --dbpass=sesame --prefix=mdl_ --fullname=moodle_minimal --shortname=moodle_minimal --adminpass=sesame --adminemail=admin@moodle.invalid --agree-license --non-interactive``
 
-Note :
-
-apres installation se connecter au container docker exec -it docker_moodle-app bash
-modifier : chmod 0777 config.php
-
 ## Pour re installer
 
  ```
    sudo rm -r dbdata  // remove database
    sudo rm -r cache   // data base redis
    sudo rm -r moodledata/*
-   sudo rm moodle/config.php
+   sudo rm -r moodle
+   #sudo rm moodle/config.php
 
 ```
 Vérifier moodledata owwner:group www-data
-         moodle
+         moodle     cb:cb
 
-4.) Visit your moodle at http://localhost:8088/moodle
+Les scripts à lancer :
+Place your favourite moodle version inside the *moodle* folder.
+- moodle_src.sh PROJECT ENV_DEVPLOY RELEASE (last param optionnal)
+Le réprtoire moodle ne doit pas exister 
+- moodle_install.sh PROJECT ENV_DEVPLOY
+
+Our la mise à jou lancer
+- moodle_ipgrade.sh PROJECT ENV_DEPLOY
+
+4.) Visit your moodle at http://localhost:8088
 
 Note: pour installer redis
 
@@ -108,4 +118,3 @@ Analyzing the source code of php7.0-fpm and more specifically fpm-conf.c, it app
 Thus we can assume - at least in this version but this is unlikely to change soon considering the present code - that it is safe to arrange the pool.d directory configuration files in alphabetical order ; any previously recorded value being overwritten by an entry with the same name read after.
 
 We have a clean way to handle configuration files for php-fpm, keeping the distribution ones untouched, and adding custom files having name alphabetically greater than the packaged ones, that contain the few options that have to be changed.
-

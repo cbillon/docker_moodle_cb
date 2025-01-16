@@ -50,6 +50,7 @@ deploy () {
     
   docker exec -it docker_moodle-app  php admin/cli/upgrade.php
   docker exec -it docker_moodle-app  php admin/cli/maintenance.php --disable
+  docker exec -it docker_moodle-app  php admin/cli/purge_caches.php
 
   info "$FUNCNAME" Fin
 

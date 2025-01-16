@@ -1,3 +1,12 @@
+#!/bin/bash
+# 1 PROJECT
+# 2 env
+[ -z "$1" ] && error  PROJECT parameter missing && exit 1
+[ -z "$2" ] && error  ENVIRONMENT parameter missing && exit 1
+# RELEASE optional
+PROJECT="$1"
+ENV_DEPLOY="$2" 
+
 docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php \
 --lang=fr --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype=mariadb \
  --dbhost=docker_moodle-db  --dbname=moodle --dbuser=admin --dbpass=sesame \
@@ -6,5 +15,5 @@ docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php \
 
 docker exec -it docker_moodle-app chmod 0777 /var/www/html/config.php
 #  copy config.php after fresh install
-[ -f  /home/cb/adele/projects/demo/env/dev/config.php ] || cp moodle/config.php  /home/cb/adele/projects/demo/env/dev/config.php
+[ -f  /home/cb/adele/projects/"$PROJECT"/env/"$ENV_DEPLOY"/config.php ] || cp moodle/config.php  /home/cb/adele/projects/"$PROJECT"/env/"$ENV_DEPLOY"/config.php
 echo "That's All!"
