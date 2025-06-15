@@ -4,26 +4,56 @@
 source env.cnf
 source functions.cfg
 
+function show_help() {
+	# Here doc, note _not_ in quotes, as we want vars to be substituted in.
+	# Note that the here doc uses <<- to allow tabbing (must use tabs)
+	# Note argument zero used here
+	cat > /dev/stdout <<- END
+		${0} [-d] [-h] [-f]
+
+
+		OPTIONAL ARGS:
+		-d : debug default : false	
+		-h : show help
+    -f :force - option force re initialisation if previous install exists
+    -r : release version  (optional) ; must exists as tag in MOODLE_SRC branch PROJECT
+		EXAMPLES
+    - cd docker_moodle_cb
+		- ./install.sh -f
+END
+}
+
 [ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
 [ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "ENV_DEPLOY$" unknown && exit 1
 # RELEASE optional
 
-info "$@"
+# while loop, and getopts
+DEBUG=false
+FORCE=false
 
-init=$(echo "$@" | grep "\-\-force")
-if [ ! -z "$init" ]; then
-   raz
-  [ "$#" -eq 2 ] && RELEASE="$1"  
-else
-  [ "$#" -eq 1 ] && RELEASE="$1"
-fi
+while getopts "h?dfm:" opt
+do
+	# case statement
+	case "${opt}" in
+	h|\?)
+		show_help
+		# exit code
+		exit 0
+		;;
+	d) DEBUG=true ;;
+  f) FORCE=true ;;
+	m) RELEASE=${OPTARG} ;;
+	esac
+done
 
-info volume docker Moodle: "$TARGET"
-if [ -d "$TARGET" ]; then
-  error dir "$TARGET" already exists
+[[ "$FORCE" == true ]] && raz
+
+info volume docker Moodle: "$RACINE"/moodle
+if [ -d "$RACINE"/moodle ]; then
+  error dir "$RACINE"/moodle already exists
   exit 1
 else
-  mkdir "$TARGET" 
+  mkdir "$RACINE"/moodle
 fi
 
 docker compose up -d

@@ -20,7 +20,7 @@ d'apres : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minima
 
 ### env.cnf
 
-mettre à jour le fichier de configuration env.cnf
+Mettre à jour le fichier de configuration env.cnf
 
 ```
   PROJECT=demo
@@ -105,6 +105,7 @@ recopier dans config.php
   $CFG->session_handler_class = '\core\session\redis';
   $CFG->session_redis_host = 'docker_moodle-redis';
 ```
+Le fichier complet config-sample.php dans le repertoire principal.
 
 Se connecter
 Plugins -> cache
@@ -117,6 +118,25 @@ Serveur : Opcache, Redis
 Fonctionnement du cron : Rapport > Statut du systéme
 
 ## Notes d'installation
+
+### integration a traefik
+
+Ajouter dans docker_moodle-web
+
+```
+  networks:
+    - proxy
+    - docker_moodle
+  labels:
+    - traefik.enable=true
+    - traefik.http.routers.moodle.rule=Host(`moodle.cbillon.ovh`)
+    - traefik.http.routers.moodle.entrypoints=https
+    - traefik.http.services.moodle.loadbalancer.server.port=8088
+    - traefik.http.routers.moodle.tls.certresolver=letsencrypt
+    - traefik.http.routers.moodle.tls.domains[0].main=cbillon.ovh
+    - traefik.http.routers.moodle.tls.domains[0].sans=*.cbillon.ovh
+
+```
 
 ### Configuration PHP
 
