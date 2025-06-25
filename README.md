@@ -152,7 +152,7 @@ Ajouter dans docker_moodle-web
     - docker_moodle
   labels:
     - traefik.enable=true
-    - traefik.http.routers.moodle.rule=Host(${SITE})
+    - traefik.http.routers.moodle.rule=Host(`${SITE}`)
     - traefik.http.routers.moodle.entrypoints=https
     - traefik.http.services.moodle.loadbalancer.server.port=8088
     - traefik.http.routers.moodle.tls.certresolver=letsencrypt
@@ -161,6 +161,8 @@ Ajouter dans docker_moodle-web
 
 
 ```
+nota : labels use backtiks not working without backticks
+
 ### Debug containers
 
 il existe un script cmd.sh qui permet l'execution d'une commande dans un container

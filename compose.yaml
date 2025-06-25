@@ -45,7 +45,7 @@ services:
       - docker_moodle
     labels:
       - traefik.enable=true
-      - traefik.http.routers.moodle.rule=Host(${SITE})
+      - traefik.http.routers.moodle.rule=Host(`${SITE}`)
       - traefik.http.routers.moodle.entrypoints=https
       - traefik.http.services.moodle.loadbalancer.server.port=8088
       - traefik.http.routers.moodle.tls.certresolver=letsencrypt
