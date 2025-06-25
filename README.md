@@ -1,4 +1,4 @@
-# Create your self-built Docker Moodle tesing environment  
+# Create your self-built Docker Moodle testing environment  
 
 This repository provides a minimal Moodle testing environment based on docker compose.
 
@@ -13,25 +13,50 @@ It is an reference implementation aimed at Moodle testers.
 Clone this repository inside a folder
 
 ``git clone git@github.com:cbillon/docker_moodle_cb.git``
-
-d'apres : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minimal_moodle
+ 
+Credits : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minimal_moodle
 
 ## Installation via script
 
-### env.cnf
+Les étapes :
+- mettre à jour le fichier includes/env.cnf
+- lancer ./install.sh -p <project> -e <env deploiement>
+
+ pour une re installtion complete utiliser le flag **-f**
+
+### includes/env.cnf
 
 Mettre à jour le fichier de configuration env.cnf
 
 ```
-  PROJECT=demo
-  ENV_DEPLOY=dev
-  DEBUG=true
+  # origine des de la base de code
+  
+  export MOODLE_SRC=~/cbm/moodle
+  export PROJECTS=~/cbm/projects
 
-  RACINE=$(pwd)
-  TARGET="$RACINE"/moodle
-  # environnement CodeBase Manager
-  MOODLE_SRC=/data/cbm/moodle
-  PROJECTS=/data/cbm/projects
+  # version des composants LAMP
+
+  export RACINE=$(pwd)
+  export PHP_VERSION='8.2'
+  export NGINX_VERSION=latest
+  export MARIADB_VERSION=latest
+  
+  # parametres de l'environnement dev
+  
+  export ENV=dev
+  export SITE=moodle.cbillon.ovh
+  export VOL_MOODLE=~/docker_moodle_cb/moodle
+  export VOL_MOODLEDATA=~/docker_moodle_cb/moodledata
+  export VOL_DBDATA=~/docker_moodle_cb/dbdata
+  export LANG=fr
+  export DBTYPE=mariadb
+  export DBNAME=moodle
+  export DBUSER=admin
+  export DBPASS=sesame
+  export FULLNAME=Moodle_50
+  export SHORTNAME=moodle_mini
+  export ADMINPASS=sesame
+  export ADMINEMAIL=claude.billon@gmail.com
 
 ```
 
@@ -39,40 +64,42 @@ Mettre à jour le fichier de configuration env.cnf
 
 dans le répertoire d'installation :
   
- ./install.sh
+ ./install.sh -p demo -e env
 
  Le script :
- - copie les sources du site dans le répertoire moodle
- - sauvegarde la configuration config.php dans l'environnent dev de CodeBase Manager
+ - prepare l'environement volumes docker des sources, de la base de données
+ - lance le script compose.yaml
+ - re copie les sources du site dans le répertoire moodle
+ - sauvegarde la configuration config.php dans l'environement dev de CodeBase Manager
 
  en cas de re installation, il faut faire le ménage
 
- ./install.sh --force
+ ./install.sh -p demo -e env -f 
  
- le script supprimme les répertoires qui sevent de volume à Docker
+ le script supprime les répertoires qui servent de volume à Docker
  - sources du site moodle
  - base de données dbdata
  - base redis : cache
  Le répertoire moodledata est re créé avec les owner:group www-data
+ Attention : lors d'une re installation la base de donnée moodle ne sera re creée que si dbdata est vide
+(cei est pris en compte avec l'option -f)
 
 ### Mise à jour
 
- apres une nouvelle livraison :
+ apres une nouvelle livraison de la base de code:
 
- ./upgrade.sh
+ ./upgrade.sh -p demo -e dev
 
  cette commande permet la mise à jour du site
- le fichier config.php est pris dans l'environnement CodeBase Manager
+ le fichier config.php est pris dans l'environnement de deploiement s'il existe
  si ce fichier n'existe pas, on prend le fichier present dans la configuration avant mise à jour.
  ceci permet de mettre à jour le fichier de configuration manuellement.
+Apres installation la version de l'environnement de déploiement est renommée config.php.bck
 
-### Pour installer redis
+Il est possible d'indiquer une version précédente de la base de code -r (release)
 
-recopier dans config.php
- ```
-  $CFG->session_handler_class = '\core\session\redis';
-  $CFG->session_redis_host = 'docker_moodle-redis';
-```
+
+
  ## Install moodle via browser 
 
 - create folder moodledata www-data www-data  
@@ -81,8 +108,6 @@ recopier dans config.php
     chown www-data:www-data
 ``` 
 
-
-
 - database
    - host: docker_moodle-db (et non **localhost**)
    - dbname: moodle
@@ -90,27 +115,25 @@ recopier dans config.php
    - dbpass: mysecretpassword 
    - prefix : mdl_ 
 
-OR
-
-via CLI:
-
-``docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php --lang=fr --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype=mariadb --dbhost=docker_moodle-db  --dbname=moodle --dbuser=admin --dbpass=sesame --prefix=mdl_ --fullname=moodle_minimal --shortname=moodle_minimal --adminpass=sesame --adminemail=admin@moodle.invalid --agree-license --non-interactive``
 
 ## Visit your moodle at http://localhost:8088
 
-Note: pour installer redis
+### Pour installer redis
 
-recopier dans config.php
+Recopier dans config.php dans l'environment de deploiement env/dev
+
  ```
   $CFG->session_handler_class = '\core\session\redis';
   $CFG->session_redis_host = 'docker_moodle-redis';
 ```
+
+
 Le fichier complet config-sample.php dans le repertoire principal.
 
 Se connecter
 Plugins -> cache
 ajouter une instance : Redis
-dans la configuration adresse du serveur: docker_moodle-redis
+dans la configuration adresse du serveur: **docker_moodle-redis**
 en bas de l'écran modifier les correspondances -> Redis
 
 Vérifier :
@@ -129,16 +152,46 @@ Ajouter dans docker_moodle-web
     - docker_moodle
   labels:
     - traefik.enable=true
-    - traefik.http.routers.moodle.rule=Host(`moodle.cbillon.ovh`)
+    - traefik.http.routers.moodle.rule=Host(${SITE})
     - traefik.http.routers.moodle.entrypoints=https
     - traefik.http.services.moodle.loadbalancer.server.port=8088
     - traefik.http.routers.moodle.tls.certresolver=letsencrypt
     - traefik.http.routers.moodle.tls.domains[0].main=cbillon.ovh
     - traefik.http.routers.moodle.tls.domains[0].sans=*.cbillon.ovh
 
-```
 
-### Configuration PHP
+```
+### Debug containers
+
+il existe un script cmd.sh qui permet l'execution d'une commande dans un container
+./cmd.sh exec-app 
+./cmd.sh exec-db
+
+pour se connecter à la base de données
+docker exec -it docker_moodle-app bash
+mariadb -u admin -psesame
+
+show databases;
+use moodle;
+show variables like "collation_database";
+show variables like "character_set_database";
+
+pour modifier
+ALTER DATABASE moodle CHARACTER SET utf8mb4 COLLATION utf8mb4_unicode_ci;
+
+### Fichiers de cConfiguration 
+
+Les version des composants (php, mariadb, nginx) se trouvent dans includes/env.cnf
+
+Les fichiers de la plate forme pour la création d'images
+- php php/moodlephp.ini
+- mariadb: conf/mycustom.cnf
+- ngnix : conf/nginx.con
+
+Les parametres de l'environement de deploiement viennent surcharger les infos d'installation
+
+php : env/dev/local.ini php, opcache
+php-fpm :  env/dev/moodlephpfpm.conf
 
 - php
 le fichier php.ini dev est déplacé dans /usr/local/etc/php/php.ini
@@ -161,16 +214,4 @@ Thus we can assume - at least in this version but this is unlikely to change soo
 
 We have a clean way to handle configuration files for php-fpm, keeping the distribution ones untouched, and adding custom files having name alphabetically greater than the packaged ones, that contain the few options that have to be changed.
 
-### Debug containers
 
-pour se connecter à la base de données
-docker exec -it docker_moodle-app bash
-mariadb -u admin -psesame
-
-show databases;
-use moodle;
-show variables like "collation_database";
-show variables like "character_set_database";
-
-pour modifier
-ALTER DATABASE moodle CHARACTER SET utf8mb4 COLLATION utf8mb4_unicode_ci;
