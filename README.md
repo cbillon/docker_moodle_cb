@@ -64,10 +64,10 @@ Mettre à jour le fichier de configuration env.cnf
 
 dans le répertoire d'installation :
   
- ./install.sh -p demo -e env
+ ./install.sh -p <nom du projet> -e env
 
  Le script :
- - prepare l'environement volumes docker des sources, de la base de données
+ - prépare l'environement volumes docker des sources, de la base de données
  - lance le script compose.yaml
  - re copie les sources du site dans le répertoire moodle
  - sauvegarde la configuration config.php dans l'environement dev de CodeBase Manager
@@ -82,15 +82,15 @@ dans le répertoire d'installation :
  - base redis : cache
  Le répertoire moodledata est re créé avec les owner:group www-data
  Attention : lors d'une re installation la base de donnée moodle ne sera re creée que si dbdata est vide
-(cei est pris en compte avec l'option -f)
+(ceci est pris en compte avec l'option -f)
 
 ### Mise à jour
 
- apres une nouvelle livraison de la base de code:
+ après une nouvelle livraison de la base de code:
 
- ./upgrade.sh -p demo -e dev
+ ./upgrade.sh -p <nom du projet> -e dev
 
- cette commande permet la mise à jour du site
+ Cette commande permet la mise à jour du site
  le fichier config.php est pris dans l'environnement de deploiement s'il existe
  si ce fichier n'existe pas, on prend le fichier present dans la configuration avant mise à jour.
  ceci permet de mettre à jour le fichier de configuration manuellement.

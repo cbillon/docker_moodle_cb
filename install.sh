@@ -8,15 +8,16 @@ function show_help() {
 	# Note that the here doc uses <<- to allow tabbing (must use tabs)
 	# Note argument zero used here
 	cat > /dev/stdout <<- END
-		${0} [-d] [-h] [-f]
+		${0} [-d] [-h] [-f] [-p] [-e]
+    REQUIRED ARGS:
+      -p : Project
+      -e : Environment	
 
 
 		OPTIONAL ARGS:
 		-d : debug default : false
-		-e : Environement	
 		-h : show help
-        -f :force - option force re initialisation if previous install exists
-        -p : Project
+    -f :force - option force re initialisation if previous install exists
 		-r : release version  (optional) ; must exists as tag in MOODLE_SRC branch PROJECT
 		EXAMPLES
     - cd docker_moodle_cb
@@ -24,10 +25,7 @@ function show_help() {
 END
 }
 
-[ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
-[ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "ENV_DEPLOY$" unknown && exit 1
 # RELEASE optional
-
 # while loop, and getopts
 DEBUG=false
 FORCE=false
@@ -44,16 +42,21 @@ do
 		;;
 	d) DEBUG=true ;;
 	e) ENV=${OPTARG} ;;
-    f) FORCE=true ;;
+  f) FORCE=true ;;
 	p) PROJECT=${OPTARG} ;;
-    r) RELEASE=${OPTARG} ;;
+  r) RELEASE=${OPTARG} ;;
 
 	esac
 done
+[ -d "$VOL_MOODLE" ] && [[ "$FORCE" == false ]]&& error dir "$VOL_MOODLE" already exists &&  exit 1
 [[ "$FORCE" == true ]] && raz
 
+[ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
+[ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "ENV_DEPLOY$" unknown && exit 1
+
+
 info volume docker Moodle: "$VOL_MOODLE"
-[ -d "$VOL_MOODLE" ] && error dir "$VOL_MOODLE" already exists &&  exit 1
+
 
 # gen from template
 envsubst '$PHP_VERSION $ENV' < "$RACINE"/templates/php.dockerfile.tmplt > "$RACINE"/php.dockerfile

@@ -52,6 +52,10 @@ info Start upgrade
 [ ! -d "$RACINE"/env/"$ENV" ] && error ENVIRONMENT "$ENV" unknown && exit 1
 # RELEASE optional
 
+info PROJECT: "$PROJECT"
+info RELEASE: "$RELEASE"
+info ENVIRONMENT: "$RACINE"/env/"$ENV"
+
 docker compose up -d
 # docker_moodle-app must be up
 n=0

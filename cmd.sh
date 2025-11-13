@@ -18,12 +18,12 @@ function show_help() {
 	  -h : show help
     
     - cd docker_moodle_cb
-		- ./cmd.sh start
+		- ./cmd.sh -c start
 
 	Les commandes disponibles : 
 	- start, stop, down
 	- exec-app, exec-db pour executer une commande dans le container eponyme
-	- sttus, stats, top 
+	- status, stats, top 
 
 END
 }
@@ -40,7 +40,7 @@ do
 		exit 0
 		;;
 	c) CMD=${OPTARG} ;;
-    d) DEBUG=true ;;
+  d) DEBUG=true ;;
 	esac
 done
 
@@ -66,7 +66,7 @@ status)
 top)
   docker compose top ;;
 *)
-  error cmonad not yet supported
+  error "$CMD" not yet supported
 esac
 
 info "That's All!"
