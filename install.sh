@@ -52,7 +52,7 @@ done
 [[ "$FORCE" == true ]] && raz
 
 [ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
-[ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "ENV_DEPLOY$" unknown && exit 1
+[ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "$ENV_DEPLOY" unknown && exit 1
 
 
 info volume docker Moodle: "$VOL_MOODLE"
@@ -60,7 +60,7 @@ info volume docker Moodle: "$VOL_MOODLE"
 
 # gen from template
 envsubst '$PHP_VERSION $ENV' < "$RACINE"/templates/php.dockerfile.tmplt > "$RACINE"/php.dockerfile
-envsubst '$PHP_VERSION' < "$RACINE"/templates/php.cron.dockerfile.tmplt > "$RACINE"/cron/cron.dockerfile
+envsubst '$PHP_VERSION $ENV' < "$RACINE"/templates/php.cron.dockerfile.tmplt > "$RACINE"/cron/cron.dockerfile
 
 docker compose up -d
 

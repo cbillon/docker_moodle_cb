@@ -19,8 +19,13 @@ $CFG->dboptions = array (
 );
 
 $CFG->wwwroot   = 'http://localhost:8088';
-$CFG->dataroot  = '/home/cb/docker_moodle_cb/moodledata';
+$CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
+
+$CFG->disableupdatenotifications = true;
+
+$CFG->session_handler_class = '\core\session\redis';
+$CFG->session_redis_host = 'docker_moodle-redis';
 
 $CFG->directorypermissions = 02777;
 

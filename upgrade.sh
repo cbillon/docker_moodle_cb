@@ -47,6 +47,7 @@ do
 done
 
 info Start upgrade
+info RACINE: "$RACINE"
 
 [ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
 [ ! -d "$RACINE"/env/"$ENV" ] && error ENVIRONMENT "$ENV" unknown && exit 1

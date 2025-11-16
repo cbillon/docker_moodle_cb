@@ -1,5 +1,7 @@
 FROM php:8.2-fpm
 
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/compose
+
 RUN apt-get update && apt-get install -y zlib1g-dev libexif-dev libpng-dev libjpeg-dev libxml2-dev libzip-dev libxslt-dev libldap-dev locales
 RUN docker-php-ext-configure gd --with-jpeg
 RUN docker-php-ext-install pdo pdo_mysql mysqli exif gd soap intl zip xsl opcache ldap

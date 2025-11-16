@@ -134,6 +134,7 @@ Se connecter
 Plugins -> cache
 ajouter une instance : Redis
 dans la configuration adresse du serveur: **docker_moodle-redis**
+server: docker_moodle-redis
 en bas de l'écran modifier les correspondances -> Redis
 
 Vérifier :

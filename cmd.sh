@@ -22,7 +22,7 @@ function show_help() {
 
 	Les commandes disponibles : 
 	- start, stop, down
-	- exec-app, exec-db pour executer une commande dans le container eponyme
+	- exec-app, exec-db, exec-web pour executer une commande dans le container eponyme
 	- status, stats, top 
 
 END
@@ -30,7 +30,7 @@ END
 
 # while loop, and getopts
 DEBUG=false
-while getopts "h?c:d" opt
+while getopts "h?o?c:d" opt
 do
 	# case statement
 	case "${opt}" in
@@ -38,9 +38,11 @@ do
 		show_help
 		# exit code
 		exit 0
-		;;
+		;;	
+	o) OPT=${OPTARG} ;;
 	c) CMD=${OPTARG} ;;
   d) DEBUG=true ;;
+	
 	esac
 done
 
@@ -53,8 +55,20 @@ exec-app)
 exec-db)
   docker compose exec -it docker_moodle-db bash ;;
 
+exec-web)
+  docker compose exec -it docker_moodle-web bash ;;
+
 start)
-  docker compose up -d ;;
+  echo opt "$OPT"
+  if [[ "$OPT" == 'f' ]]; then
+	 echo optio force-recreate
+   docker compose up -d --force-recreate
+	else
+	 docker compose up -d
+	fi
+	echo opt "$OPT" ;;
+	
+
 stop)
   docker compose stop ;;
 down)
