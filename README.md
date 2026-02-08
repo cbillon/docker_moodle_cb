@@ -20,7 +20,7 @@ Credits : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minima
 
 Les étapes :
 - mettre à jour le fichier includes/env.cnf
-- lancer ./install.sh -p <project> -e <env deploiement>
+- lancer ./install.sh
 
  pour une re installtion complete utiliser le flag **-f**
 
@@ -64,7 +64,7 @@ Mettre à jour le fichier de configuration env.cnf
 
 dans le répertoire d'installation :
   
- ./install.sh -p <nom du projet> -e env
+ ./install.sh
 
  Le script :
  - prépare l'environement volumes docker des sources, de la base de données
@@ -72,9 +72,9 @@ dans le répertoire d'installation :
  - re copie les sources du site dans le répertoire moodle
  - sauvegarde la configuration config.php dans l'environement dev de CodeBase Manager
 
- en cas de re installation, il faut faire le ménage
+ en cas de re installation, il faut faire le ménage (base de donnée) utilier l'option -f
 
- ./install.sh -p demo -e env -f 
+ ./install.sh -f 
  
  le script supprime les répertoires qui servent de volume à Docker
  - sources du site moodle
@@ -88,17 +88,17 @@ dans le répertoire d'installation :
 
  après une nouvelle livraison de la base de code:
 
- ./upgrade.sh -p <nom du projet> -e dev
+ ./install.sh 
 
- Cette commande permet la mise à jour du site
- le fichier config.php est pris dans l'environnement de deploiement s'il existe
- si ce fichier n'existe pas, on prend le fichier present dans la configuration avant mise à jour.
+ La commande determine le contexte en testant la présence du fichier config.php; si celui est :
+ - absent : installation initiale
+ - present: mise à jour
+
+ fichier config.php du nouveau depoiement :
+ - si un fichier config.php est trouvé dans le répertoire conf celui est pris puis renommé config.php.bck
+ - sinon si ce fichier n'existe pas, on prend le fichier present dans la configuration avant mise à jour.
+
  ceci permet de mettre à jour le fichier de configuration manuellement.
-Apres installation la version de l'environnement de déploiement est renommée config.php.bck
-
-Il est possible d'indiquer une version précédente de la base de code -r (release)
-
-
 
  ## Install moodle via browser 
 
@@ -182,7 +182,7 @@ show variables like "character_set_database";
 pour modifier
 ALTER DATABASE moodle CHARACTER SET utf8mb4 COLLATION utf8mb4_unicode_ci;
 
-### Fichiers de cConfiguration 
+### Fichiers de configuration 
 
 Les version des composants (php, mariadb, nginx) se trouvent dans includes/env.cnf
 
@@ -203,7 +203,7 @@ le fichier de configuration PHP/moodlephp.ini est copié dans /usr/local/etc/php
 
 le fichier de configuration PHP/moodlephpfpm.conf est copié dans /usr/local/etc/php-fpm.d
 
-Muliple configuration file php-fpm
+Multiple configuration file php-fpm
 Analyzing the source code of php7.0-fpm and more specifically fpm-conf.c, it appears that
 
     the main configuration file php-fpm.conf is read first [ fpm_conf_load_ini_file() ],
@@ -218,3 +218,5 @@ Thus we can assume - at least in this version but this is unlikely to change soo
 We have a clean way to handle configuration files for php-fpm, keeping the distribution ones untouched, and adding custom files having name alphabetically greater than the packaged ones, that contain the few options that have to be changed.
 
 
+## Moodle docker pb with reverse proxy
+https://moodle.org/mod/forum/discuss.php?d=449405#p1806231

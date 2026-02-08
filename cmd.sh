@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source includes/env.cnf
+source conf/env.cnf
 source includes/functions.cfg
 
 function show_help() {

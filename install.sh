@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source includes/env.cnf
+source conf/env.cnf
 source includes/functions.cfg
 
 function show_help() {
@@ -8,11 +8,9 @@ function show_help() {
 	# Note that the here doc uses <<- to allow tabbing (must use tabs)
 	# Note argument zero used here
 	cat > /dev/stdout <<- END
-		${0} [-d] [-h] [-f] [-p] [-e]
-    REQUIRED ARGS:
-      -p : Project
-      -e : Environment	
-
+		${0} [-d] [-h] [-f] [-r]
+    
+		Parameters PROJECT ENV from includes/env.cnf 
 
 		OPTIONAL ARGS:
 		-d : debug default : false
@@ -21,8 +19,8 @@ function show_help() {
 		-r : release version  (optional) ; must exists as tag in MOODLE_SRC branch PROJECT
 		EXAMPLES
     - cd docker_moodle_cb
-		- ./install.sh -f -p demo -e dev
-END
+		- ./install.sh -f
+	END
 }
 
 # RELEASE optional
@@ -31,7 +29,7 @@ DEBUG=false
 FORCE=false
 RELEASE=''
 
-while getopts "h?de:fp:r:" opt
+while getopts "h?dfr:" opt
 do
 	# case statement
 	case "${opt}" in
@@ -41,50 +39,68 @@ do
 		exit 0
 		;;
 	d) DEBUG=true ;;
-	e) ENV=${OPTARG} ;;
   f) FORCE=true ;;
-	p) PROJECT=${OPTARG} ;;
   r) RELEASE=${OPTARG} ;;
 
 	esac
 done
-[ -d "$VOL_MOODLE" ] && [[ "$FORCE" == false ]]&& error dir "$VOL_MOODLE" already exists &&  exit 1
-[[ "$FORCE" == true ]] && raz
 
-[ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".yml ] && error PROJECT "$PROJECT" unknown && exit 1
-[ ! -d "$PROJECTS"/"$PROJECT"/env/"$ENV_DEPLOY" ] && error ENVIRONMENT "$ENV_DEPLOY" unknown && exit 1
+info PROJECT: "$PROJECT" RELEASE: "$RELEASE" RACINE: "$RACINE" FORCE: "$FORCE"
 
+[ ! -d "$VOL_MOODLE" ] && error "$VOL_MOODLE" not exists &&  exit 1
+[ ! -f "$PROJECTS"/"$PROJECT"/"$PROJECT".json ] && error PROJECT "$PROJECT" unknown && exit 1
 
 info volume docker Moodle: "$VOL_MOODLE"
+set_state
+info option traitement: "$STATE" -force: "$FORCE"
 
+update_moodle_volume "$PROJECT" "$RELEASE"
 
-# gen from template
-envsubst '$PHP_VERSION $ENV' < "$RACINE"/templates/php.dockerfile.tmplt > "$RACINE"/php.dockerfile
-envsubst '$PHP_VERSION $ENV' < "$RACINE"/templates/php.cron.dockerfile.tmplt > "$RACINE"/cron/cron.dockerfile
+info option traitement: "$STATE" -force: "$FORCE"
 
-docker compose up -d
+#read -n 1 -p "To continue, press any key"
 
-n=0
-while [ -z "$ret" ]  && [ "$n" -lt 5 ]; do
-  ret=$(docker compose ps --status running | grep docker_moodle-app)
-  sleep 1
-  ((n++))
-done 
+if [ "$STATE" == install ]; then
 
-update_moodle_volume "$PROJECT" "$ENV" "$RELEASE"
+  info install Moodle
+  # update script before install
+  # envsubst < "$RACINE"/templates/php.dockerfile > "$RACINE"/php/php.dockerfile
+  # envsubst < "$RACINE"/templates/dropdb.sql > "$RACINE"/dropdb.sql
+  # envsubst < "$RACINE"/templates/composer_install.sh > "$RACINE"/composer_install.sh
+  # envsubst < "$RACINE"/templates/post_install.sh > "$RACINE"/post_install.sh
+  chmod 0777 "$VOL_MOODLE"
+  docker compose up -d
+  wait_docker_up docker_moodle-db
+    
+  read -n 1 -p "To continue, press any key"
 
-docker exec -it docker_moodle-app php /var/www/html/admin/cli/install.php \
- --lang="$LANG" --wwwroot=http://localhost:8088 --dataroot="$VOL_MOODLEDATA" --dbtype="$DBTYPE" \
- --dbhost=docker_moodle-db  --dbname="$DBNAME" --dbuser="$DBUSER" --dbpass="$DBPASS" \
- --prefix=mdl_ --fullname="$FULLNAME" --shortname="$SHORTNAME" --adminpass="$ADMINPASS"\
- --adminemail="$ADMINEMAIL" --agree-license --non-interactive
+  docker exec -it -u www-data docker_moodle-app php /var/www/html/admin/cli/install.php \
+   --lang="$LANG" --wwwroot=http://localhost:8088 --dataroot=/var/www/moodledata --dbtype="$DBTYPE" \
+   --dbhost=docker_moodle-db  --dbname="$DBNAME" --dbuser="$DBUSER" --dbpass="$DBPASS" \
+   --prefix=mdl_ --fullname="$FULLNAME" --shortname="$SHORTNAME" --adminpass="$ADMINPASS"\
+   --adminemail="$ADMINEMAIL" --agree-license --non-interactive
 
-docker exec -it docker_moodle-app chmod 0777 /var/www/html/config.php
-docker exec -it docker_moodle-app  php /var/www/html/admin/cli/cron.php
-#  copy config.php after fresh install
-cp "$VOL_MOODLE"/config.php  "$RACINE"/env/"$ENV"/config.php
-cp "$VOL_MOODLE"/config.php  "$RACINE"/env/"$ENV"/config.bck
+  #docker exec -it docker_moodle-app ./post_install.sh
+  #  save config.php after fresh install
+  sudo chown cb:cb "$VOL_MOODLE"/config.php
+  chmod 0755 "$VOL_MOODLE"
+  sudo chmod 0644 "$VOL_MOODLE"/config.php
+  cp "$VOL_MOODLE"/config.php  "$RACINE"/save/config.php
+  info config.php saved in "$RACINE"/save
+  info
+  success Moodle installation completed successfully. You can now log on to your new Moodle with admin "$ADMINPASS"
+  
+else
 
-info config.php saved in "$PROJECTS"/"$PROJECT"/env/"$ENV"
+  info update Moodle
 
-success "That's All!"
+# docker_moodle-app must be up
+
+  docker exec -it -u www-data docker_moodle-app  php admin/cli/maintenance.php --enable 
+  docker exec -it -u www-data docker_moodle-app  ./composer_install.sh
+  docker exec -it -u www-data docker_moodle-app  php admin/cli/upgrade.php
+  docker exec -it -u www-data docker_moodle-app  php admin/cli/maintenance.php --disable
+  docker exec -it -u www-data docker_moodle-app  php admin/cli/purge_caches.php
+
+fi  
+info "That's All!"

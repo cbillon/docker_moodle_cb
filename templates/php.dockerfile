@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:${PHP_VERSION}-fpm
 
 RUN apt update && apt install -y libicu-dev zlib1g-dev libexif-dev libpng-dev libjpeg-dev libxml2-dev libzip-dev libxslt-dev libldap-dev locales && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-configure gd --with-jpeg
@@ -11,5 +11,4 @@ RUN localedef -c -i fr_FR -f UTF-8 fr_FR.UTF-8
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 RUN composer self-update
 
-RUN useradd -u 1000 cb
-#RUN usermod -u 1000 www-data
+RUN usermod -u ${UID_WWW_DATA} www-data

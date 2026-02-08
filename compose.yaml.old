@@ -3,14 +3,12 @@ services:
     container_name: docker_moodle-app
     build:
       context: php/
-      dockerfile: dockerfile  
+      dockerfile: php.dockerfile  
     restart: always
     volumes:
-      - ./moodle:/var/www/html
-      - ./moodledata:/var/www/moodledata
-      - ./cache:/var/www/.cache
-      - ./conf/php.ini:/usr/local/etc/php/php.ini
-      - ./conf/php-fpm.ini:/usr/local/etc/php/conf.d/php-fpm.ini
+      - ${VOL_MOODLE}:/var/www/html
+      - ${VOL_MOODLEDATA}:/var/www/moodledata
+      - ./env/dev/local.ini:/usr/local/etc/php/php.ini
     networks:     
       - docker_moodle    
     depends_on:
@@ -20,7 +18,7 @@ services:
     container_name: docker_moodle-cron
     build:
       context: cron/
-      dockerfile: dockerfile
+      dockerfile: cron.Dockerfile
     volumes_from:
       - docker_moodle-app
     profiles: [cron]
@@ -34,7 +32,7 @@ services:
 
   docker_moodle-web:
     container_name: docker_moodle-web
-    image: nginx:latest
+    image: nginx:${NGINX_VERSION}
     restart: always
     volumes:
       - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -47,7 +45,7 @@ services:
       - docker_moodle
     labels:
       - traefik.enable=true
-      - traefik.http.routers.moodle.rule=Host(`moodle.cbillon.ovh`)
+      - traefik.http.routers.moodle.rule=Host(`${SITE}`)
       - traefik.http.routers.moodle.entrypoints=https
       - traefik.http.services.moodle.loadbalancer.server.port=8088
       - traefik.http.routers.moodle.tls.certresolver=letsencrypt
@@ -55,16 +53,19 @@ services:
       - traefik.http.routers.moodle.tls.domains[0].sans=*.cbillon.ovh
   docker_moodle-db:
     container_name: docker_moodle-db
-    image: mariadb:latest
+    image: mariadb:${MARIADB_VERSION}
     restart: always
     environment:
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=sesame
-      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=${DBUSER}
+      - MYSQL_PASSWORD=${DBPASS}
+      - MYSQL_DATABASE=${DBNAME}
       - MYSQL_ALLOW_EMPTY_PASSWORD=true
     volumes:
-      - ./dbdata:/var/lib/mysql
+      - ${VOL_DBDATA}:/var/lib/mysql
       - ./conf/mycustom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    expose:
+      - "3306"
     networks:
       - docker_moodle
   docker_moodle-redis:

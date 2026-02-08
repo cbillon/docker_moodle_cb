@@ -1,6 +1,8 @@
+.cache
 cache
 dbdata
 log
 moodle
 moodledata
+save
 test*
