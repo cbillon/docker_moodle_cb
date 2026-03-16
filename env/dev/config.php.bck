@@ -22,6 +22,7 @@ $CFG->wwwroot   = 'http://localhost:8088';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 
+$CFg->sessioncookie = md5($CFG->wwwroot);
 $CFG->disableupdatenotifications = true;
 
 $CFG->session_handler_class = '\core\session\redis';

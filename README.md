@@ -20,9 +20,11 @@ Credits : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minima
 
 Les étapes :
 - mettre à jour le fichier includes/env.cnf
-- lancer ./install.sh
+- lancer ./deploy.sh
 
- pour une re installtion complete utiliser le flag **-f**
+Le mode update ou install est déterminé par la présence ou non du fichier config.php dans le répertoire des sources Moodle. 
+
+ pour forcer une re installtion complete utiliser le flag **-f**
 
 ### includes/env.cnf
 
@@ -64,7 +66,7 @@ Mettre à jour le fichier de configuration env.cnf
 
 dans le répertoire d'installation :
   
- ./install.sh
+ ./deploy.sh
 
  Le script :
  - prépare l'environement volumes docker des sources, de la base de données
@@ -72,9 +74,9 @@ dans le répertoire d'installation :
  - re copie les sources du site dans le répertoire moodle
  - sauvegarde la configuration config.php dans l'environement dev de CodeBase Manager
 
- en cas de re installation, il faut faire le ménage (base de donnée) utilier l'option -f
+ en cas de re installation, il faut faire le ménage (base de donnée) utiliser l'option -f
 
- ./install.sh -f 
+ ./deploy.sh -f 
  
  le script supprime les répertoires qui servent de volume à Docker
  - sources du site moodle
@@ -88,7 +90,7 @@ dans le répertoire d'installation :
 
  après une nouvelle livraison de la base de code:
 
- ./install.sh 
+ ./deploy.sh 
 
  La commande determine le contexte en testant la présence du fichier config.php; si celui est :
  - absent : installation initiale
@@ -142,6 +144,11 @@ Serveur : Opcache, Redis
 Fonctionnement du cron : Rapport > Statut du systéme
 
 ## Notes d'installation
+
+### Creation reseau
+```
+  docker network create proxy
+```
 
 ### integration a traefik
 
@@ -220,3 +227,29 @@ We have a clean way to handle configuration files for php-fpm, keeping the distr
 
 ## Moodle docker pb with reverse proxy
 https://moodle.org/mod/forum/discuss.php?d=449405#p1806231
+
+## Connection Postgresql
+
+il faut ajouter dans le dockerfile PHP
+
+apt-get install --no-install-recommends -y libpq-dev 
+docker-php-ext-install pdo pgsql pdo_pgsql 
+
+ne pas mettre : docker-configure-ext-configure pgsql --with-pgsql=/usr/local/pgsql qui n'est pas compatble avec l'image utilisée.
+
+Base Moodle créée par defaut
+
+-- Database: moodle
+
+-- DROP DATABASE IF EXISTS moodle;
+
+CREATE DATABASE moodle
+    WITH
+    OWNER = admin
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'en_US.utf8'
+    LC_CTYPE = 'en_US.utf8'
+    LOCALE_PROVIDER = 'libc'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1
+    IS_TEMPLATE = False;

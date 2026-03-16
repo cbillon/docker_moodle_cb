@@ -4,9 +4,9 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-$CFG->dbtype    = 'mariadb';
+$CFG->dbtype    = 'pgsql';
 $CFG->dblibrary = 'native';
-$CFG->dbhost    = 'docker_moodle-db';
+$CFG->dbhost    = 'docker_moodle-postgres';
 $CFG->dbname    = 'moodle';
 $CFG->dbuser    = 'admin';
 $CFG->dbpass    = 'sesame';
@@ -15,15 +15,11 @@ $CFG->dboptions = array (
   'dbpersist' => 0,
   'dbport' => '',
   'dbsocket' => '',
-  'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
 $CFG->wwwroot   = 'http://localhost:8088';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
-# ! configuration Moodle redis: docker_moodle-redis
-$CFG->session_handler_class = '\core\session\redis';
-$CFG->session_redis_host = 'docker_moodle-redis';
 
 $CFG->directorypermissions = 02777;
 

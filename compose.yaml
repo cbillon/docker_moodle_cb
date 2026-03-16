@@ -14,9 +14,11 @@ services:
     networks:     
       - docker_moodle    
     depends_on:
-      - docker_moodle-db
+      docker_moodle-db:
+        condition: service_healthy
 
-  moodle_docker-cron:
+
+  docker_moodle-cron:
     container_name: docker_moodle-cron
     build:
       context: cron/
@@ -30,7 +32,8 @@ services:
     networks:
       - docker_moodle
     depends_on:
-      - docker_moodle-db
+      docker_moodle-db:
+        condition: service_healthy
 
   docker_moodle-web:
     container_name: docker_moodle-web
@@ -53,8 +56,55 @@ services:
       - traefik.http.routers.moodle.tls.certresolver=letsencrypt
       - traefik.http.routers.moodle.tls.domains[0].main=cbillon.ovh
       - traefik.http.routers.moodle.tls.domains[0].sans=*.cbillon.ovh
+  
   docker_moodle-db:
-    container_name: docker_moodle-db
+    # see https://hub.docker.com/_/postgres for list of postgres image versions on docker hub
+    #image: postgres:latest # To download the latest image
+    #image: postgres:17.4-alpine # To download a specific version, here the version 17.4 of Postgresql under an alpine linux distribution
+    image: postgres:latest # To download a specific version, here the version 17.4 of Postgresql
+    container_name: docker_moodle-postgres
+    volumes:
+      - ./postgresql_data:/var/lib/postgresql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    # env_file:
+    #   - conf/env.cnf    
+    #user: admin
+    environment:
+      POSTGRES_DB: moodle
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: sesame
+    ports:
+      - "5432:5432" # HOST_PORT:CONTAINER_PORT
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d moodle -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docker_moodle
+  docker_moodle-pgadmin:
+    # see https://hub.docker.com/r/dpage/pgadmin4
+    image: dpage/pgadmin4:latest # To download the latest image
+    container_name: docker_moodle-pgadmin
+    #volumes:
+    #  - ./pgadmin_working_dir:/var/lib/pgadmin
+    #  - ./pgadmin_config_dir:/pgadmin4
+    # env_file:
+    #   - conf/env.cnf    
+    environment:
+      PGADMIN_DEFAULT_EMAIL: claude.billon@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: sesame
+      PGADMIN_CONFIG_WTF_CSRF_ENABLED: False
+    depends_on:
+      docker_moodle-db:
+        condition: service_healthy
+    ports:
+      - "5433:80" # HOST_PORT:CONTAINER_PORT
+    networks:
+      - docker_moodle
+
+  docker_moodle-mariadb:
+    container_name: docker_moodle-mariadb
     image: mariadb:latest
     restart: always
     environment:
@@ -65,13 +115,14 @@ services:
     volumes:
       - ./dbdata:/var/lib/mysql
       - ./conf/mycustom.cnf:/etc/mysql/conf.d/custom.cnf
+    profiles: [mariadb]
     networks:
       - docker_moodle
   docker_moodle-redis:
     image: redis:latest
     container_name: docker_moodle-redis
     volumes:
-      - ./cache:/data
+      - ./redis_data:/data
     restart: always
     expose:
       - "6379"

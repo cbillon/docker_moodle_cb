@@ -4,5 +4,7 @@ dbdata
 log
 moodle
 moodledata
+postgresql_data
+redis_data
 save
 test*
