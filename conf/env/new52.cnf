@@ -1,0 +1,27 @@
+export MOODLE_SRC=~/cbm/moodle
+export PROJECTS=~/cbm/projects
+
+export RACINE=$(pwd)
+export PHP_VERSION='8.4'
+export UID_WWW_DATA=1000
+export NGINX_VERSION=latest
+export MARIADB_VERSION=latest
+export REDIS_VERSION=latest
+
+#export MOODLE_CODE_FOLDER=/var/www/html/"$PROJECT"
+#export CACHE_DIR="$RACINE"/.cache/composer
+
+export PROJECT=new52
+export SITE=new52.cbillon.ovh
+export VOL_MOODLE="$RACINE"/moodle
+export VOL_MOODLEDATA="$RACINE"/moodledata
+export VOL_DBDATA="$RACINE"/dbdata
+export LANG=fr
+export DBTYPE=pgsql # other type mariadb
+export DBNAME=moodle52
+export DBUSER=admin
+export DBPASS=sesame
+export FULLNAME=Moodle_52
+export SHORTNAME=moodle_mini
+export ADMINPASS=sesame
+export ADMINEMAIL=claude.billon@gmail.com

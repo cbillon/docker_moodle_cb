@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source conf/env.cnf
 source includes/functions.cfg
 
 function show_help() {
@@ -8,18 +7,19 @@ function show_help() {
 	# Note that the here doc uses <<- to allow tabbing (must use tabs)
 	# Note argument zero used here
 	cat > /dev/stdout <<- END
-		${0} [-d] [-h] [-f] [-r]
+		${0} [-d] [-e <environment] [-h] [-f] [-r]
     
 		Parameters PROJECT ENV from includes/env.cnf 
 
 		OPTIONAL ARGS:
 		-d : debug default : false
-		-h : show help
+    -e : environment (mandatory)
     -f :force - option force re initialisation if previous install exists
+    -h : show help
 		-r : release version  (optional) ; must exists as tag in MOODLE_SRC branch PROJECT
 		EXAMPLES
     - cd docker_moodle_cb
-		- ./deploy.sh -f
+		- ./deploy.sh -f -e demo
 	END
 }
 
@@ -29,7 +29,7 @@ DEBUG=false
 FORCE=false
 RELEASE=''
 
-while getopts "h?dfr:" opt
+while getopts "h?de:fr:" opt
 do
 	# case statement
 	case "${opt}" in
@@ -39,7 +39,13 @@ do
 		exit 0
 		;;
 	d) DEBUG=true ;;
+  e) ENVIRON=${OPTARG} 
+     echo environ: "$ENVIRON"
+     [ ! -f ./conf/env/"${ENVIRON}".cnf ] && error environment conf/env/"$ENVIRON".cnf not exists &&  exit 1
+     source conf/env/"${ENVIRON}".cnf
+  ;;
   f) FORCE=true ;;
+
   r) RELEASE=${OPTARG} ;;
 
 	esac
@@ -58,7 +64,7 @@ if set_state; then
   
   update_moodle_volume "$PROJECT" "$RELEASE"
   info Moodle sources updated
-  
+   
   cd "$RACINE" || exit
   if docker compose ps --services --filter "status=running" | grep 'docker_moodle-app'; then
     info docker containers already up !
@@ -111,7 +117,7 @@ if set_state; then
     docker exec -it -u www-data docker_moodle-app  php admin/cli/purge_caches.php
   fi
 else
-  error Operetion canceled
+  error Operation canceled
 fi
 
 info "That's All!"
