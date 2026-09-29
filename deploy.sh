@@ -29,6 +29,12 @@ DEBUG=false
 FORCE=false
 RELEASE=''
 
+if [[ $# -eq 0 ]]; then
+  error Parameters missing
+  show_help
+  exit 0
+fi
+
 while getopts "h?de:fr:" opt
 do
 	# case statement

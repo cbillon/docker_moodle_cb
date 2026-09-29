@@ -19,16 +19,16 @@ Credits : git clone https://github.com/Dmfama20/docker_moodle_minimal.git minima
 ## Installation via script
 
 Les étapes :
-- mettre à jour le fichier includes/env.cnf
+- mettre à jour le fichier conf/env/<project>.cnf
 - lancer ./deploy.sh
 
 Le mode update ou install est déterminé par la présence ou non du fichier config.php dans le répertoire des sources Moodle. 
 
  pour forcer une re installtion complete utiliser le flag **-f**
 
-### includes/env.cnf
+### confi/env/<project name>.cnf
 
-Mettre à jour le fichier de configuration env.cnf
+Mettre à jour le fichier de configuration <project name>.cnf
 
 ```
   # origine des de la base de code

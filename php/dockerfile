@@ -50,7 +50,8 @@ ENV LC_ALL=fr_FR.UTF-8
 #RUN composer install --no-dev --classmap-authoritative
 
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
-RUN composer self-update
+RUN composer install --no-dev --classmap-authoritative
+#RUN composer self-update
 
-#RUN useradd -u 1000 $USER
+RUN useradd -u 1000 $USER
 #RUN usermod -u 1000 www-data
