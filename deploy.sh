@@ -106,8 +106,8 @@ if set_state; then
     set_permissions "$VOL_MOODLE" 'd'  '0755'
     set_permissions "$VOL_MOODLE" 'f'  '0644'
     #  save config.php after fresh install
-    cp "$VOL_MOODLE"/config.php  "$RACINE"/save/config.php
-    info config.php saved in "$RACINE"/save
+    cp "$VOL_MOODLE"/config.php  "$VOL_MOODLEDATA"/config.php    
+    info config.php saved in "$VOL_MOODLEDATA"
     success Moodle installation completed successfully. You can now log on to your new Moodle with admin "$ADMINPASS"
     
   else
