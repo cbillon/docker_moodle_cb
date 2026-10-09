@@ -3,6 +3,9 @@ services:
     container_name: docker_moodle-app
     build:
       context: php/
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.4}
+        USER: ${USER}
       dockerfile: dockerfile  
     restart: always
     volumes:
@@ -69,9 +72,9 @@ services:
     #   - conf/env.cnf    
     #user: admin
     environment:
-      POSTGRES_DB: moodle
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: sesame
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432" # HOST_PORT:CONTAINER_PORT
     healthcheck:
@@ -91,9 +94,9 @@ services:
     # env_file:
     #   - conf/env.cnf    
     environment:
-      PGADMIN_DEFAULT_EMAIL: claude.billon@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: sesame
-      PGADMIN_CONFIG_WTF_CSRF_ENABLED: False
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-claude.billon@gmail.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-sesame}
+      PGADMIN_CONFIG_WTF_CSRF_ENABLED: ${PGADMIN_CONFIG_WTF_CSRF_ENABLED:-false}
     depends_on:
       docker_moodle-db:
         condition: service_healthy
